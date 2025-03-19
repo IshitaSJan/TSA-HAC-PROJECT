@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="quiz-container">
+        <h1>Career Quiz</h1>
+        <div id="quiz">
+            <p id="question">Question will appear here</p>
+            <div id="options"></div>
+            <button id="next-btn">Next</button>
+        </div>
+        <p id="result"></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #993131;
+}
+
+.quiz-container {
+    width: 50%;
+    margin: 50px auto;
+    padding: 20px;
+    background: #D98888;
+    box-shadow: 0px 0px 10px 0px #0000001a;
+    border-radius: 10px;
+}
+
+h1 {
+    color: #333;
+}
+
+button {
+    background-color: #EBDAC3;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #CEB490;
+}
+
+.option {
+    display: block;
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.option:hover {
+    background-color: #CFB592;
+}
+
+.selected {
+    background-color: #B29266 !important;
+    color: black;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const quizData = [
+   {
+      question: "What kind of work environment do you prefer?",
+      options: [
+        { text: "A structured office setting", type: "Business Management and Marketing" },
+        { text: "A laboratory or research setting", type: "Health Science" },
+        {
+          text: "A quiet place where I can study and learn",
+          type: "Education",
+        },
+        { text: "Outdoors or hands-on work", type: "STEM" },
+      ],
+    },
+    {
+      question: "What do you enjoy doing in your free time?",
+      options: [
+        { text: "Solving puzzles or coding", type: "STEM" },
+        { text: "Painting, writing, or creating content", type: " Education" },
+        {
+          text: "Building things or fixing mechanical objects",
+          type: "Business Management and Marketing",
+        },
+        { text: "Helping people solve problems", type: "Health Science" },
+      ],
+    },
+    {
+      question:
+        "If money weren’t a factor, what would you spend your life doing?",
+      options: [
+        { text: "Caring for people in need", type: "Health Science" },
+        { text: "Inventing or designing new technology", type: "STEM" },
+        { text: "Fighting for justice and equality", type: "Education" },
+        { text: "Starting and managing a business", type: "Business Management and Marketing" },
+      ],
+    },
+    {
+      question: "What type of school subjects do you enjoy the most?",
+      options: [
+        { text: "Math & Science", type: "STEM" },
+        { text: "Law & Politics", type: "Extrovert" },
+        { text: "Business & Economics", type: "Education" },
+        { text: "Psychology & Social Studies", type: "Health Science" },
+      ],
+    },
+    {
+      question: "How do you prefer to solve problems?",
+      options: [
+        { text: "Using logic and data analysis", type: "Introvert" },
+        { text: "Using hands-on skills to fix things", type: "Extrovert" },
+        { text: "Researching, writing, and debating", type: "Adventurer" },
+        { text: "Thinking creatively and innovating", type: "Relaxed" },
+      ],
+    },
+    {
+      question: "How do you handle challenges?",
+      options: [
+        { text: "Analyze data and find patterns", type: "Introvert" },
+        {
+          text: "Build or experiment with different solutions",
+          type: "Extrovert",
+        },
+        {
+          text: "Understand all sides and make an informed decision",
+          type: "Adventurer",
+        },
+        { text: "Look at it from a creative perspective", type: "Relaxed" },
+      ],
+    },
+  ];
+
+  let currentQuestionIndex = 0;
+  let scores = { Health_Science: 0, Business_Management_and_Marketing: 0, Education: 0, STEM: 0 };
+  let selectedType = null; // Store the selected type for deselection
+
+  const questionElement = document.getElementById("question");
+  const optionsElement = document.getElementById("options");
+  const nextButton = document.getElementById("next-btn");
+  const resultElement = document.getElementById("result");
+
+  function loadQuestion() {
+    selectedType = null; // Reset selection for new question
+    const currentQuestion = quizData[currentQuestionIndex];
+    questionElement.textContent = currentQuestion.question;
+
+    optionsElement.innerHTML = "";
+
+    currentQuestion.options.forEach((option) => {
+      const button = document.createElement("button");
+      button.classList.add("option");
+      button.textContent = option.text;
+      button.onclick = () => toggleOption(option.type, button);
+      optionsElement.appendChild(button);
+    });
+
+    nextButton.style.display = "none";
+  }
+
+  function toggleOption(type, selectedButton) {
+    const buttons = document.querySelectorAll(".option");
+
+    if (selectedType === type) {
+      // If the clicked option is already selected, deselect it
+      selectedType = null;
+      selectedButton.classList.remove("selected");
+      scores[type]--; // Decrease the count
+      nextButton.style.display = "none";
+    } else {
+      // Otherwise, select the new option
+      buttons.forEach((button) => button.classList.remove("selected"));
+      selectedButton.classList.add("selected");
+
+      // If an option was previously selected, decrease its score
+      if (selectedType) {
+        scores[selectedType]--;
+      }
+
+      selectedType = type;
+      scores[type]++; // Increment score for new selection
+      nextButton.style.display = "block";
+    }
+  }
+
+  nextButton.addEventListener("click", () => {
+    if (!selectedType) return; // Prevent skipping without selecting
+
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < quizData.length) {
+      loadQuestion();
+    } else {
+      showResult();
+    }
+  });
+
+  function showResult() {
+    questionElement.textContent = "Your Career Interest:";
+    optionsElement.innerHTML = "";
+    nextButton.style.display = "none";
+
+    let topCareerField = Object.keys(scores).reduce((a, b) => (scores[a] > scores[b] ? a : b));
+    resultElement.textContent = `You are best suited for a career in ${topCareerField.replace(/_/g, " ")}!`;
+  }
+
+  loadQuestion();
+});
+</script>
